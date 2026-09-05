@@ -1426,6 +1426,10 @@
                 <div style="background: #d4edda; border: 1px solid #c3e6cb; color: #155724; padding: 12px; border-radius: 8px; margin-top: 15px; font-size: 13px;">
                     ✅ As notificações serão enviadas automaticamente nos horários que você configurar.
                 </div>
+
+                <button id="viewReportBtn" class="btn btn-primary" style="width: 100%; margin-top: 15px; display: none; background: var(--primary-blue);" onclick="document.getElementById('calibrationReportText').innerText = appData.calibrationReport.text; document.getElementById('calibrationReportModal').classList.add('active');">
+                    📋 Ver relatório da última calibração
+                </button>
             </div>
 
             <!-- TAB: NO SMOKING MODE -->
@@ -1447,11 +1451,11 @@
                 <!-- CALIBRATION SECTION -->
                 <div id="calibrationSection" style="display: none;">
                     <div class="calibration-section">
-                        <div class="calibration-title">📊 Calibração de 24 Horas</div>
+                        <div class="calibration-title">📊 Calibração em Andamento</div>
                         
                         <div class="calibration-info">
-                            Clique no botão abaixo <strong>toda vez que você fumar</strong> nos próximos 24 horas. 
-                            O aplicativo registrará o padrão exato do seu consumo.
+                            Clique no botão abaixo <strong>toda vez que você fumar</strong>, no momento exato ou logo em seguida.
+                            Quanto mais preciso o registro, mais suave fica o protocolo.
                         </div>
 
                         <div class="calibration-counter">
@@ -1463,12 +1467,23 @@
                             🚬 Registrar Cigarro
                         </button>
 
+                        <button class="calibration-btn" id="calibNotifBtn" style="margin-top: 10px; background: #555;" onclick="requestCalibrationPersistentNotification()">
+                            🔔 Ativar notificação permanente
+                        </button>
+
                         <button class="calibration-finish-btn" id="finishCalibrationBtn" style="display: none;" onclick="finishCalibration()">
-                            ✅ Finalizar Calibração (após 24h)
+                            ✅ Finalizar Calibração Agora
                         </button>
 
                         <div id="calibrationStatus" style="margin-top: 15px; text-align: center; color: #666; font-size: 13px;"></div>
                     </div>
+
+                    <!-- Título de status: calibração ativa + horário previsto de término -->
+                    <div id="calibrationActiveTitle" style="margin-top: 12px; text-align: center; background: var(--light-blue); border: 2px solid var(--primary-blue); border-radius: 10px; padding: 12px; font-weight: bold; color: var(--primary-blue); font-size: 14px;"></div>
+
+                    <button class="calibration-finish-btn" style="margin-top: 12px; background: #999;" onclick="calibrationGoToEdit()">
+                        ↩ Voltar (editar informações)
+                    </button>
                 </div>
 
                 <!-- ACTIVE MODE SECTION -->
@@ -1628,6 +1643,67 @@
                         <div style="display: grid; gap: 10px;">
                             <button class="calibration-btn" style="margin: 0;" onclick="resolvePending('fumei')">🚬 Fumei</button>
                             <button class="calibration-btn" style="margin: 0; background: #4CAF50;" onclick="resolvePending('pulei')">⏭️ Pulei</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ============================================ -->
+                <!-- MODAL: QUESTIONÁRIO RETROATIVO (calibração iniciada pela manhã) -->
+                <!-- ============================================ -->
+                <div id="calibrationRetroModal" class="modal">
+                    <div class="modal-content">
+                        <h3 style="color: var(--primary-blue); margin-bottom: 15px;">☀️ Antes de começar</h3>
+                        <p style="margin-bottom: 15px; line-height: 1.6; color: #444;">
+                            Pra deixar a calibração mais precisa, me ajuda com 3 perguntinhas rápidas sobre hoje.
+                        </p>
+
+                        <p style="font-weight: bold; margin-bottom: 8px; color: #333;">Quantos cigarros você já fumou hoje, desde que acordou?</p>
+                        <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-bottom: 8px;">
+                            <button class="retro-count-btn calibration-btn" style="margin: 0; padding: 10px 0;" onclick="retroSelectCount('1')">1</button>
+                            <button class="retro-count-btn calibration-btn" style="margin: 0; padding: 10px 0;" onclick="retroSelectCount('2')">2</button>
+                            <button class="retro-count-btn calibration-btn" style="margin: 0; padding: 10px 0;" onclick="retroSelectCount('3')">3</button>
+                            <button class="retro-count-btn calibration-btn" style="margin: 0; padding: 10px 0;" onclick="retroSelectCount('4')">4</button>
+                            <button class="retro-count-btn calibration-btn" style="margin: 0; padding: 10px 0; font-size: 11px;" onclick="retroSelectCount('mais')">+4</button>
+                        </div>
+                        <input type="number" id="retroCustomCount" min="0" placeholder="Quantos, mais ou menos?" style="display: none; width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; margin-bottom: 15px;">
+
+                        <p style="font-weight: bold; margin-bottom: 8px; color: #333;">Que horas você acordou?</p>
+                        <input type="time" id="retroWakeTime" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; margin-bottom: 15px;">
+
+                        <p style="font-weight: bold; margin-bottom: 8px; color: #333;">Que horas foi (mais ou menos) o primeiro cigarro? <span style="font-weight: normal; color: #888;">(se souber)</span></p>
+                        <input type="time" id="retroFirstCigTime" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; margin-bottom: 15px;">
+
+                        <div style="display: grid; gap: 10px;">
+                            <button class="calibration-btn" style="margin: 0;" onclick="submitRetroactive()">✅ Confirmar</button>
+                            <button class="calibration-btn" style="margin: 0; background: #999;" onclick="skipRetroactive()">Pular essas perguntas</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ============================================ -->
+                <!-- MODAL: LEMBRETE PERIÓDICO DE REGISTRO -->
+                <!-- ============================================ -->
+                <div id="calibrationReminderModal" class="modal">
+                    <div class="modal-content">
+                        <h3 style="color: var(--primary-blue); margin-bottom: 15px;">🔔 Lembrete</h3>
+                        <p style="margin-bottom: 20px; line-height: 1.6; color: #444;">
+                            Não esqueça de apertar <strong>"Registrar Cigarro"</strong> no momento em que for fumar, ou logo em seguida.
+                            Isso deixa a calibração muito mais precisa.
+                        </p>
+                        <button class="calibration-btn" style="margin: 0;" onclick="closeCalibrationReminderModal()">Entendi</button>
+                    </div>
+                </div>
+
+                <!-- ============================================ -->
+                <!-- MODAL: RELATÓRIO DE CALIBRAÇÃO -->
+                <!-- ============================================ -->
+                <div id="calibrationReportModal" class="modal">
+                    <div class="modal-content">
+                        <h3 style="color: var(--primary-blue); margin-bottom: 15px;">📋 Relatório da Calibração</h3>
+                        <pre id="calibrationReportText" style="white-space: pre-wrap; background: #f5f5f5; border-radius: 8px; padding: 12px; font-size: 12px; line-height: 1.6; color: #333; max-height: 320px; overflow-y: auto; margin-bottom: 15px;"></pre>
+                        <div style="display: grid; gap: 10px;">
+                            <button class="calibration-btn" style="margin: 0;" onclick="copyCalibrationReport()">📋 Copiar relatório</button>
+                            <button class="calibration-btn" style="margin: 0; background: #999;" onclick="closeCalibrationReportModal()">Fechar</button>
                         </div>
                     </div>
                 </div>
@@ -2052,6 +2128,18 @@
                 if (appData.calibrationData && !appData.calibrationData.wakeWindow) {
                     appData.calibrationData.wakeWindow = { earliestFirstClick: null, latestFirstClick: null, samples: [] };
                 }
+                if (appData.calibrationData && appData.calibrationData.isCalibrating && !appData.calibrationData.calibrationEndTime) {
+                    appData.calibrationData.calibrationEndTime = computeCalibrationEndTime(new Date());
+                }
+                if (appData.calibrationData && appData.calibrationData.lastReminderShown === undefined) {
+                    appData.calibrationData.lastReminderShown = Date.now();
+                }
+                if (appData.calibrationData && appData.calibrationData.persistentNotifOn === undefined) {
+                    appData.calibrationData.persistentNotifOn = false;
+                }
+                if (appData.calibrationData && appData.calibrationData.retroactive === undefined) {
+                    appData.calibrationData.retroactive = null;
+                }
             }
         }
 
@@ -2193,16 +2281,21 @@
             appData.noSmokingActive = isChecked;
 
             if (isChecked) {
-                // Start calibration (48h — dois ciclos de dia/despertar)
+                // Start calibration — dura até o fim do ciclo de dia certo (ver computeCalibrationEndTime)
                 document.getElementById('calibrationSection').style.display = 'block';
                 document.getElementById('activeModeSection').style.display = 'none';
+                const now = new Date();
                 appData.calibrationData = {
                     isCalibrating: true,
                     startTime: Date.now(),
                     calibrationStartTime: Date.now(),
+                    calibrationEndTime: computeCalibrationEndTime(now),
                     cigarettes: [],
                     intervals: [],
                     wakeWindow: { earliestFirstClick: null, latestFirstClick: null, samples: [] },
+                    retroactive: null,
+                    lastReminderShown: Date.now(),
+                    persistentNotifOn: false,
                     // Dados para o plano de 40 dias
                     plan: null,
                     // Histórico de comportamento
@@ -2212,7 +2305,14 @@
                     // Controle de semana
                     weekStarted: 0
                 };
+                document.getElementById('calibNotifBtn').innerText = '🔔 Ativar notificação permanente';
+                document.getElementById('calibNotifBtn').disabled = false;
                 updateCalibrationStatus();
+
+                // Se ativou até 10h, pergunta retroativamente o que já aconteceu hoje
+                if (now.getHours() < 10) {
+                    document.getElementById('calibrationRetroModal').classList.add('active');
+                }
             } else {
                 // Turn off
                 document.getElementById('calibrationSection').style.display = 'none';
@@ -2222,6 +2322,20 @@
             }
 
             saveData();
+        }
+
+        // Calcula até quando a calibração deve durar, respeitando o ciclo de dia:
+        // ativado até às 10h -> calibra só o dia de hoje (até 23:59:59)
+        // ativado depois das 10h -> calibra o resto de hoje + o dia seguinte inteiro
+        function computeCalibrationEndTime(now) {
+            const endOfDay = new Date(now);
+            endOfDay.setHours(23, 59, 59, 999);
+            if (now.getHours() < 10) {
+                return endOfDay.getTime();
+            }
+            const endOfNextDay = new Date(endOfDay);
+            endOfNextDay.setDate(endOfNextDay.getDate() + 1);
+            return endOfNextDay.getTime();
         }
 
         function recordCigarette() {
@@ -2239,6 +2353,7 @@
 
             document.getElementById('cigaretteCount').innerText = appData.calibrationData.cigarettes.length;
             updateCalibrationStatus();
+            updateCalibrationPersistentNotification();
             saveData();
         }
 
@@ -2258,21 +2373,80 @@
         }
 
         function updateCalibrationStatus() {
-            const startTime = appData.calibrationData.calibrationStartTime;
-            const elapsed = Date.now() - startTime;
-            const totalTime = 48 * 60 * 60 * 1000; // 48 horas em ms
-            const remaining = Math.max(0, totalTime - elapsed);
+            const cd = appData.calibrationData;
+            const remaining = Math.max(0, cd.calibrationEndTime - Date.now());
             const hours = Math.floor(remaining / (60 * 60 * 1000));
             const minutes = Math.floor((remaining % (60 * 60 * 1000)) / (60 * 1000));
 
-            let status = `Tempo restante: ${hours}h ${minutes}m<br>`;
-            status += `Cigarros registrados: ${appData.calibrationData.cigarettes.length}`;
+            const endDate = new Date(cd.calibrationEndTime);
+            const endTimeStr = endDate.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
 
-            document.getElementById('calibrationStatus').innerHTML = status;
+            const titleEl = document.getElementById('calibrationActiveTitle');
+            if (titleEl) {
+                titleEl.innerHTML = `Calibração ativa — faltam ${hours}h ${minutes}m<br><span style="font-weight: normal; font-size: 12px;">Término previsto: ${endTimeStr}</span>`;
+            }
+
+            document.getElementById('calibrationStatus').innerHTML =
+                `Cigarros registrados: ${cd.cigarettes.length}`;
 
             if (remaining <= 0) {
                 document.getElementById('finishCalibrationBtn').style.display = 'block';
             }
+        }
+
+        // ============================================
+        // QUESTIONÁRIO RETROATIVO (calibração iniciada até às 10h)
+        // ============================================
+        let retroSelectedCount = null;
+        function retroSelectCount(value) {
+            retroSelectedCount = value;
+            document.querySelectorAll('.retro-count-btn').forEach(b => b.style.background = '');
+            if (window.event && window.event.target) {
+                window.event.target.style.background = 'var(--primary-blue)';
+            }
+            document.getElementById('retroCustomCount').style.display = (value === 'mais') ? 'block' : 'none';
+        }
+
+        function submitRetroactive() {
+            let count = 0;
+            if (retroSelectedCount === 'mais') {
+                const custom = parseInt(document.getElementById('retroCustomCount').value, 10);
+                count = isNaN(custom) ? 5 : custom;
+            } else if (retroSelectedCount) {
+                count = parseInt(retroSelectedCount, 10);
+            }
+
+            const wakeTime = document.getElementById('retroWakeTime').value || null;
+            const firstCigTime = document.getElementById('retroFirstCigTime').value || null;
+
+            appData.calibrationData.retroactive = { count, wakeTime, firstCigTime, recordedAt: Date.now() };
+
+            // Ordem importa: só a 1ª amostra do dia conta pra janela de despertar,
+            // então o horário de ACORDAR precisa ser registrado antes do horário do cigarro.
+            if (wakeTime) {
+                const [hh, mm] = wakeTime.split(':').map(Number);
+                const d = new Date();
+                d.setHours(hh, mm, 0, 0);
+                registerWakeSample(d.getTime());
+            }
+            // Se soubermos o horário aproximado do 1º cigarro, vira uma amostra real
+            // (ajuda no cálculo do intervalo médio)
+            if (firstCigTime) {
+                const [hh, mm] = firstCigTime.split(':').map(Number);
+                const d = new Date();
+                d.setHours(hh, mm, 0, 0);
+                appData.calibrationData.cigarettes.push(d.getTime());
+                registerWakeSample(d.getTime());
+            }
+
+            document.getElementById('calibrationRetroModal').classList.remove('active');
+            document.getElementById('cigaretteCount').innerText = appData.calibrationData.cigarettes.length;
+            updateCalibrationStatus();
+            saveData();
+        }
+
+        function skipRetroactive() {
+            document.getElementById('calibrationRetroModal').classList.remove('active');
         }
 
         function finishCalibration() {
@@ -2305,11 +2479,98 @@
             appData.calibrationData.dayStarted = Date.now();
             appData.calibrationData.nextCigaretteTime = Date.now() + avgInterval;
 
+            const report = generateCalibrationReport();
+            appData.calibrationData.isCalibrating = false;
+
             document.getElementById('calibrationSection').style.display = 'none';
             document.getElementById('activeModeSection').style.display = 'block';
 
             startActiveMode();
             saveData();
+
+            // Mostra o relatório assim que a calibração termina
+            document.getElementById('calibrationReportText').innerText = report.text;
+            document.getElementById('calibrationReportModal').classList.add('active');
+            document.getElementById('viewReportBtn').style.display = 'block';
+        }
+
+        // ============================================
+        // RELATÓRIO DE CALIBRAÇÃO
+        // ============================================
+        function generateCalibrationReport() {
+            const cd = appData.calibrationData;
+            const cigarettes = cd.cigarettes || [];
+            const total = cigarettes.length;
+            const start = cd.calibrationStartTime;
+            const end = Date.now();
+            const durationHours = ((end - start) / (60 * 60 * 1000)).toFixed(1);
+
+            let avgIntervalMin = 0;
+            if (cd.intervals && cd.intervals.length > 0) {
+                avgIntervalMin = Math.round(cd.intervals.reduce((a, b) => a + b, 0) / cd.intervals.length / 60000);
+            }
+
+            let madrugada = 0, manha = 0, tarde = 0, noite = 0;
+            cigarettes.forEach(ts => {
+                const h = new Date(ts).getHours();
+                if (h >= 5 && h < 12) manha++;
+                else if (h >= 12 && h < 18) tarde++;
+                else if (h >= 18 && h < 24) noite++;
+                else madrugada++;
+            });
+
+            const daysSpan = Math.max(1, Math.ceil((end - start) / (24 * 60 * 60 * 1000)));
+            const avgPerDay = (total / daysSpan).toFixed(1);
+
+            const ww = cd.wakeWindow;
+            let wakeInfo = 'Não determinado';
+            if (ww && ww.earliestFirstClick !== null && ww.earliestFirstClick !== undefined) {
+                const mins = ww.earliestFirstClick;
+                const hh = String(Math.floor(mins / 60)).padStart(2, '0');
+                const mm = String(mins % 60).padStart(2, '0');
+                wakeInfo = `${hh}:${mm}`;
+            }
+
+            let retroInfo = 'Não usado (calibração começou fora da janela da manhã, ou perguntas puladas)';
+            if (cd.retroactive) {
+                retroInfo = `${cd.retroactive.count} cigarro(s) informado(s) antes de iniciar`;
+                if (cd.retroactive.wakeTime) retroInfo += `, acordou às ${cd.retroactive.wakeTime}`;
+                if (cd.retroactive.firstCigTime) retroInfo += `, 1º cigarro aproximadamente às ${cd.retroactive.firstCigTime}`;
+            }
+
+            const startStr = new Date(start).toLocaleString('pt-BR');
+            const endStr = new Date(end).toLocaleString('pt-BR');
+
+            const text =
+`RELATÓRIO DE CALIBRAÇÃO — PAI DE AÇO
+Período: ${startStr} até ${endStr} (${durationHours}h)
+Total de cigarros registrados: ${total}
+Dias abrangidos: ${daysSpan}
+Média por dia: ${avgPerDay}
+Intervalo médio entre cigarros: ${avgIntervalMin} min
+Horário de despertar identificado: ${wakeInfo}
+Dado retroativo: ${retroInfo}
+
+Distribuição por período:
+  Madrugada (00h-05h): ${madrugada}
+  Manhã (05h-12h): ${manha}
+  Tarde (12h-18h): ${tarde}
+  Noite (18h-24h): ${noite}`;
+
+            const report = { text, generatedAt: Date.now(), total, avgIntervalMin, avgPerDay, daysSpan };
+            appData.calibrationReport = report;
+            return report;
+        }
+
+        function copyCalibrationReport() {
+            const text = document.getElementById('calibrationReportText').innerText;
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(text).then(() => alert('Relatório copiado!'));
+            }
+        }
+
+        function closeCalibrationReportModal() {
+            document.getElementById('calibrationReportModal').classList.remove('active');
         }
 
         function createReductionPlan(avgInterval, totalCigarettesPerDay) {
@@ -3069,6 +3330,131 @@
         }
 
         // ============================================
+        // NOTIFICAÇÃO PERSISTENTE DURANTE A CALIBRAÇÃO
+        // ============================================
+        function requestCalibrationPersistentNotification() {
+            requestNotificationPermission().then(granted => {
+                if (granted) {
+                    appData.calibrationData.persistentNotifOn = true;
+                    saveData();
+                    updateCalibrationPersistentNotification();
+                    const btn = document.getElementById('calibNotifBtn');
+                    btn.innerText = '✅ Notificação ativa';
+                    btn.disabled = true;
+                } else {
+                    alert('Não foi possível ativar a notificação agora. Você pode permitir depois nas configurações do navegador/celular.');
+                }
+            });
+        }
+
+        function updateCalibrationPersistentNotification() {
+            const cd = appData.calibrationData;
+            if (!cd || !cd.isCalibrating || !cd.persistentNotifOn) return;
+            const remaining = Math.max(0, cd.calibrationEndTime - Date.now());
+            const hours = Math.floor(remaining / (60 * 60 * 1000));
+            const minutes = Math.floor((remaining % (60 * 60 * 1000)) / (60 * 1000));
+            sendToSW({
+                type: 'SHOW_PERSISTENT_NOTIFICATION',
+                title: '📊 Pai de Aço — Calibração em andamento',
+                body: `${cd.cigarettes.length} cigarro(s) registrados • Faltam ${hours}h ${minutes}m`
+            });
+        }
+
+        // ============================================
+        // LEMBRETE PERIÓDICO DE REGISTRO
+        // ============================================
+        const CALIBRATION_REMINDER_INTERVAL_MS = 3 * 60 * 60 * 1000; // 3 horas
+
+        function maybeShowCalibrationReminder() {
+            const cd = appData.calibrationData;
+            if (!cd || !cd.isCalibrating) return;
+            const last = cd.lastReminderShown || 0;
+            if (Date.now() - last >= CALIBRATION_REMINDER_INTERVAL_MS) {
+                cd.lastReminderShown = Date.now();
+                saveData();
+                document.getElementById('calibrationReminderModal').classList.add('active');
+            }
+        }
+
+        function closeCalibrationReminderModal() {
+            document.getElementById('calibrationReminderModal').classList.remove('active');
+        }
+
+        function maybeAutoFinishCalibration() {
+            const cd = appData.calibrationData;
+            if (!cd || !cd.isCalibrating) return;
+            if (Date.now() >= cd.calibrationEndTime && cd.cigarettes.length > 0) {
+                finishCalibration();
+            }
+        }
+
+        // Ticker leve, roda o app inteiro: só age quando há calibração ativa
+        function startCalibrationTicker() {
+            setInterval(() => {
+                const cd = appData.calibrationData;
+                if (!cd || !cd.isCalibrating) return;
+                updateCalibrationStatus();
+                updateCalibrationPersistentNotification();
+                maybeAutoFinishCalibration();
+            }, 30000);
+        }
+
+        // ============================================
+        // TRAVA DE TELA NA CALIBRAÇÃO
+        // ============================================
+        // Troca de aba sem depender de um evento de clique (event.target), pra poder
+        // ser chamada de código (ex: ao reabrir o app durante a calibração).
+        function switchTabProgrammatic(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            const tabEl = document.getElementById(tabName);
+            if (tabEl) tabEl.classList.add('active');
+            const order = ['main', 'settings', 'noSmoking', 'history'];
+            const idx = order.indexOf(tabName);
+            const btns = document.querySelectorAll('.tab-btn');
+            if (idx >= 0 && btns[idx]) btns[idx].classList.add('active');
+            updateDisplay();
+        }
+
+        function forceCalibrationScreen() {
+            switchTabProgrammatic('noSmoking');
+            const toggle = document.getElementById('noSmokingToggle');
+            if (toggle) toggle.checked = true;
+            document.getElementById('calibrationSection').style.display = 'block';
+            document.getElementById('activeModeSection').style.display = 'none';
+            updateCalibrationStatus();
+        }
+
+        // Botão "Voltar" na tela de calibração: leva pro menu de configurações pra editar algo.
+        // A trava volta a valer assim que o usuário sair do app e reabrir.
+        function calibrationGoToEdit() {
+            switchTabProgrammatic('settings');
+        }
+
+        let __appHiddenAt = null;
+        function onAppResume() {
+            const cd = appData.calibrationData;
+            if (cd && cd.isCalibrating) {
+                forceCalibrationScreen();
+            }
+            maybeShowCalibrationReminder();
+            updateCalibrationPersistentNotification();
+        }
+
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden') {
+                __appHiddenAt = Date.now();
+            } else if (document.visibilityState === 'visible') {
+                // Só considera "reabriu o app" se ficou fora por mais de alguns segundos,
+                // pra não brigar com bloqueios rápidos de tela.
+                if (__appHiddenAt === null || Date.now() - __appHiddenAt > 2000) {
+                    onAppResume();
+                }
+                __appHiddenAt = null;
+            }
+        });
+
+        // ============================================
         // INIT
         // ============================================
         window.addEventListener('load', async () => {
@@ -3078,6 +3464,17 @@
             // Permissao de notificacao NAO e pedida aqui: quem pede e a tela
             // obPermissions do onboarding (obRequestPermissions), para nao
             // disparar o prompt do navegador antes do usuario escolher o modo.
+
+            if (appData.calibrationReport) {
+                document.getElementById('viewReportBtn').style.display = 'block';
+            }
+            if (appData.calibrationData && appData.calibrationData.persistentNotifOn) {
+                document.getElementById('calibNotifBtn').innerText = '✅ Notificação ativa';
+                document.getElementById('calibNotifBtn').disabled = true;
+            }
+
+            startCalibrationTicker();
+            onAppResume();
 
             // Checa mensagens agendadas a cada minuto
             setInterval(checkScheduledMessages, 60000);
@@ -3160,6 +3557,7 @@
             appData.calibrationData.isCalibrating = true;
             appData.calibrationData.startTime = day1Start;
             appData.calibrationData.calibrationStartTime = day1Start;
+            appData.calibrationData.calibrationEndTime = day1Start + midnight2 * 60 * 1000;
             appData.calibrationData.cigarettes = cigarettes;
             appData.calibrationData.intervals = intervals;
             appData.calibrationData.wakeWindow = {
@@ -3167,6 +3565,9 @@
                 latestFirstClick: wake,
                 samples: [wake]
             };
+            appData.calibrationData.retroactive = null;
+            appData.calibrationData.lastReminderShown = now;
+            appData.calibrationData.persistentNotifOn = false;
             appData.calibrationData.plan = null;
             appData.calibrationData.dailyBehavior = {};
             appData.calibrationData.protocolLevel = 1;
@@ -3184,8 +3585,7 @@
             let targetMs = null;
 
             if (appData.calibrationData && appData.calibrationData.isCalibrating) {
-                const calibEnd = appData.calibrationData.calibrationStartTime + 48 * 60 * 60 * 1000;
-                targetMs = calibEnd;
+                targetMs = appData.calibrationData.calibrationEndTime;
             } else if (typeof pendingCigarette !== 'undefined' && pendingCigarette && pendingCigarette.provisional) {
                 const pendingEnd = pendingCigarette.assumedAt + 2 * 60 * 1000;
                 targetMs = pendingEnd;
@@ -3207,8 +3607,12 @@
             debugLog('Avançado para 5s antes do próximo evento.');
             debugUpdateIndicator();
 
-            if (typeof updateCountdown === 'function') updateCountdown();
-            if (typeof updateCalibrationStatus === 'function') updateCalibrationStatus();
+            const stillCalibrating = appData.calibrationData && appData.calibrationData.isCalibrating;
+            if (stillCalibrating) {
+                if (typeof updateCalibrationStatus === 'function') updateCalibrationStatus();
+            } else {
+                if (typeof updateCountdown === 'function') updateCountdown(typeof getCurrentPlanDay === 'function' ? getCurrentPlanDay() : 1);
+            }
         }
 
         // --- 3) Indicador ao vivo (somente leitura) ---
