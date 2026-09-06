@@ -3,7 +3,7 @@
 // Gerencia notificações em background
 // ============================================
 
-const CACHE_NAME = 'pai-de-aco-v1';
+const CACHE_NAME = 'istrong-v1';
 const urlsToCache = [
     './index.html',
     './manifest.json',
@@ -90,7 +90,7 @@ function showNotification(title, body, tag) {
 // NOTIFICAÇÃO PERSISTENTE (modo No Smoking)
 // ============================================
 function showPersistentNotification(title, body) {
-    self.registration.showNotification(title || '⏱️ Pai de Aço - Não Fumar', {
+    self.registration.showNotification(title || '⏱️ iStrong - Não Fumar', {
         body: body || '',
         icon: './icon-192.png',
         badge: './icon-192.png',

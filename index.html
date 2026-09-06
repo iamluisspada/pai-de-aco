@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pai de Aço</title>
+    <title>iStrong</title>
     <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#0066cc">
     <link rel="icon" type="image/png" href="./icon-192.png">
@@ -1245,7 +1245,7 @@
         <!-- 1. SPLASH -->
         <div id="obSplash1" class="ob-screen ob-splash active">
             <div class="ob-splash-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" ><path d="M12 3.2l6.5 2.8v5.6c0 4.6-2.8 7.7-6.5 9.2-3.7-1.5-6.5-4.6-6.5-9.2V6z"/></svg></div>
-            <div class="ob-splash-title">Pai de Aço</div>
+            <div class="ob-splash-title">iStrong</div>
         </div>
 
         <!-- 2. SPLASH TRANSIÇÃO -->
@@ -1257,7 +1257,7 @@
         <!-- 3. LOGO / CARREGANDO -->
         <div id="obSplash3" class="ob-screen ob-logo-screen">
             <div class="ob-splash-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" ><path d="M12 3.2l6.5 2.8v5.6c0 4.6-2.8 7.7-6.5 9.2-3.7-1.5-6.5-4.6-6.5-9.2V6z"/></svg></div>
-            <div class="ob-splash-title">Pai de Aço</div>
+            <div class="ob-splash-title">iStrong</div>
             <div class="ob-splash-sub" id="obLoadingText">Carregando...</div>
         </div>
 
@@ -1423,7 +1423,7 @@
     <div class="app-container">
         <!-- HEADER -->
         <div class="header">
-            <h1>⚙️ Pai de Aço</h1>
+            <h1>⚙️ iStrong</h1>
             <p>Cada dia é uma vitória</p>
         </div>
 
@@ -2880,7 +2880,7 @@ Distribuição por período:
 
         function onCigaretteLiberated() {
             liberatedAt = Date.now();
-            sendToSW({ type: 'SHOW_NOTIFICATION', title: 'Pai de Aço 🚬', body: 'Pode fumar agora! Toque em "Fumei" ou "Pular".', tag: 'cigarette-liberated' });
+            sendToSW({ type: 'SHOW_NOTIFICATION', title: 'iStrong 🚬', body: 'Pode fumar agora! Toque em "Fumei" ou "Pular".', tag: 'cigarette-liberated' });
         }
 
         // Timer de 1-2min zerou sem resposta: assume fumado, mas de forma PROVISÓRIA
@@ -3415,7 +3415,7 @@ Distribuição por período:
         // ============================================
         function exportData() {
             const exportObj = {
-                appName: 'Pai de Aço',
+                appName: 'iStrong',
                 exportDate: new Date().toLocaleString('pt-BR'),
                 dayCounter: appData.dayCounter,
                 startDate: appData.startDate,
@@ -3428,7 +3428,7 @@ Distribuição por período:
             const url = URL.createObjectURL(dataBlob);
             const link = document.createElement('a');
             link.href = url;
-            link.download = `pai-de-aco-${new Date().toISOString().split('T')[0]}.json`;
+            link.download = `istrong-${new Date().toISOString().split('T')[0]}.json`;
             link.click();
         }
 
@@ -3486,7 +3486,7 @@ Distribuição por período:
             if (currentTime === appData.morningTime && lastMessageCheckKey !== `morning-${todayKey}`) {
                 lastMessageCheckKey = `morning-${todayKey}`;
                 const msg = MORNING_MESSAGES[Math.floor(Math.random() * MORNING_MESSAGES.length)];
-                sendToSW({ type: 'SHOW_NOTIFICATION', title: 'Pai de Aço ☀️', body: msg, tag: 'daily-morning' });
+                sendToSW({ type: 'SHOW_NOTIFICATION', title: 'iStrong ☀️', body: msg, tag: 'daily-morning' });
             }
 
             if (currentTime === appData.nightTime && lastMessageCheckKey !== `night-${todayKey}`) {
@@ -3496,7 +3496,7 @@ Distribuição por período:
                 const msg = isFriday
                     ? FRIDAY_TIPS[Math.floor(Math.random() * FRIDAY_TIPS.length)]
                     : NIGHT_MESSAGES[Math.floor(Math.random() * NIGHT_MESSAGES.length)];
-                sendToSW({ type: 'SHOW_NOTIFICATION', title: isFriday ? 'Pai de Aço 💡 Dica de sexta' : 'Pai de Aço 🌙', body: msg, tag: 'daily-night' });
+                sendToSW({ type: 'SHOW_NOTIFICATION', title: isFriday ? 'iStrong 💡 Dica de sexta' : 'iStrong 🌙', body: msg, tag: 'daily-night' });
             }
         }
 
@@ -3508,7 +3508,7 @@ Distribuição por período:
             }
             sendToSW({
                 type: 'SHOW_PERSISTENT_NOTIFICATION',
-                title: 'Pai de Aço — Não Fumar',
+                title: 'iStrong — Não Fumar',
                 body: minutes > 0 ? `Faltam ${minutes} min para o próximo horário` : 'Horário liberado ✅'
             });
         }
@@ -3539,7 +3539,7 @@ Distribuição por período:
             const minutes = Math.floor((remaining % (60 * 60 * 1000)) / (60 * 1000));
             sendToSW({
                 type: 'SHOW_PERSISTENT_NOTIFICATION',
-                title: '📊 Pai de Aço — Calibração em andamento',
+                title: '📊 iStrong — Calibração em andamento',
                 body: `${cd.cigarettes.length} cigarro(s) registrados • Faltam ${hours}h ${minutes}m`
             });
         }
@@ -3909,7 +3909,7 @@ Distribuição por período:
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'pai-de-aco-debug-export-' + __RealDateNow() + '.json';
+            a.download = 'istrong-debug-export-' + __RealDateNow() + '.json';
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);

@@ -1,6 +1,6 @@
 {
-  "name": "Pai de Aço",
-  "short_name": "Pai de Aço",
+  "name": "iStrong",
+  "short_name": "iStrong",
   "description": "App de motivação diária para parar de fumar",
   "start_url": "./index.html",
   "display": "standalone",
