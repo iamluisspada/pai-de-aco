@@ -101,6 +101,7 @@ function showPersistentNotification(title, body) {
         silent: true,
         renotify: true,
         actions: [
+            { action: 'log_cigarette', title: '🚬 Registrar Cigarro' },
             { action: 'help', title: '🆘 Ajuda' }
         ]
     });
@@ -112,17 +113,22 @@ function showPersistentNotification(title, body) {
 self.addEventListener('notificationclick', (event) => {
     event.notification.close();
     const wantsHelp = event.action === 'help';
+    const wantsLogCigarette = event.action === 'log_cigarette';
 
     event.waitUntil(
         clients.matchAll({ type: 'window' }).then((clientList) => {
             for (const client of clientList) {
                 if (client.url.includes('index.html') && 'focus' in client) {
                     if (wantsHelp) client.postMessage({ type: 'OPEN_HELP_REQUEST' });
+                    if (wantsLogCigarette) client.postMessage({ type: 'LOG_CIGARETTE_REQUEST' });
                     return client.focus();
                 }
             }
             if (clients.openWindow) {
-                return clients.openWindow(wantsHelp ? './index.html?help=1' : './index.html');
+                let url = './index.html';
+                if (wantsHelp) url = './index.html?help=1';
+                if (wantsLogCigarette) url = './index.html?logcig=1';
+                return clients.openWindow(url);
             }
         })
     );

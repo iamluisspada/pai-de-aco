@@ -3842,17 +3842,34 @@ Distribuição por período:
             startCalibrationTicker();
             onAppResume();
 
-            // Recebe pedido de ajuda vindo do botão de ação da notificação persistente
+            // Registra um cigarro pedido pelo botão de ação da notificação persistente
+            function logCigaretteFromNotification() {
+                if (appData.calibrationData && appData.calibrationData.isCalibrating) {
+                    recordCigarette();
+                } else if (appData.noSmokingActive && typeof confirmSmoked === 'function') {
+                    confirmSmoked();
+                }
+                showBrief('Cigarro registrado. 🚬');
+            }
+
+            // Recebe pedidos vindos dos botões de ação da notificação persistente
             if (navigator.serviceWorker) {
                 navigator.serviceWorker.addEventListener('message', (event) => {
                     if (event.data && event.data.type === 'OPEN_HELP_REQUEST') {
                         openHelpRequestModal();
                     }
+                    if (event.data && event.data.type === 'LOG_CIGARETTE_REQUEST') {
+                        logCigaretteFromNotification();
+                    }
                 });
             }
-            // Caso o app tenha sido aberto do zero pelo botão "Ajuda" da notificação
-            if (new URLSearchParams(window.location.search).get('help') === '1') {
+            // Caso o app tenha sido aberto do zero por um botão de ação da notificação
+            const obUrlParams = new URLSearchParams(window.location.search);
+            if (obUrlParams.get('help') === '1') {
                 openHelpRequestModal();
+            }
+            if (obUrlParams.get('logcig') === '1') {
+                logCigaretteFromNotification();
             }
 
             // Checa mensagens agendadas a cada minuto
