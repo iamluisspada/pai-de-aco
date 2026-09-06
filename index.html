@@ -309,6 +309,49 @@
             margin: 6px 0 10px;
         }
 
+        /* Botão flutuante "Preciso de ajuda" — pílula laranja/avermelhada suave,
+           visível só durante o protocolo ativo (pós-calibração) */
+        .help-pill-btn {
+            position: fixed;
+            bottom: 22px;
+            right: 16px;
+            display: none;
+            align-items: center;
+            gap: 6px;
+            padding: 11px 18px;
+            border: none;
+            border-radius: 999px;
+            background: linear-gradient(150deg, #ffd6c4 0%, #ffa583 55%, #ef7f5c 100%);
+            box-shadow: inset 0 1px 2px rgba(255,255,255,.7), inset 0 -3px 6px rgba(180,70,40,.18), 0 8px 18px rgba(220,90,55,.35);
+            color: #7a2f18;
+            font-family: var(--ob-font-head);
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            z-index: 400;
+        }
+        .help-pill-btn.visible { display: flex; }
+        .help-pill-btn:active { transform: scale(.95); }
+        .help-pill-btn svg { width: 18px; height: 18px; stroke: #7a2f18; }
+
+        /* Pílulas de motivo dentro do modal de ajuda — mesma família de vidro azul */
+        .help-reason-btn {
+            width: 100%;
+            padding: 13px 18px;
+            border: none;
+            border-radius: 999px;
+            margin-bottom: 10px;
+            background: linear-gradient(165deg, var(--ob-glass-hi) 0%, var(--ob-glass-mid) 50%, var(--ob-glass-lo) 100%);
+            box-shadow: inset 0 2px 3px rgba(255,255,255,.95), inset 0 -5px 9px rgba(47,127,212,.18), 0 8px 16px rgba(47,127,212,.25);
+            color: var(--ob-accent-deep);
+            font-family: var(--ob-font-head);
+            font-weight: 700;
+            font-size: 14px;
+            text-align: center;
+            cursor: pointer;
+        }
+        .help-reason-btn:active { transform: scale(.97); }
+
         /* SETTINGS */
         .settings-group {
             background: var(--light-gray);
@@ -1809,6 +1852,39 @@
         </div>
     </div>
 
+    <!-- BOTÃO FLUTUANTE: PRECISO DE AJUDA (só visível no protocolo ativo) -->
+    <button id="helpPillBtn" class="help-pill-btn" onclick="openHelpRequestModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.3"/><path d="M12 11.2v5.4"/><circle cx="12" cy="7.9" r="0.15" fill="currentColor" stroke="currentColor" stroke-width="2.2"/></svg>
+        Preciso de ajuda
+    </button>
+
+    <!-- MODAL: PEDIDO DE AJUDA (protocolo de exceção) -->
+    <div id="helpRequestModal" class="modal">
+        <div class="modal-content">
+            <h3 style="color: #d9663f; margin-bottom: 6px;">🆘 Precisa de ajuda?</h3>
+            <p style="margin-bottom: 18px; line-height: 1.6; color: #444;">
+                Toque no que mais combina com o que você está sentindo agora.
+            </p>
+            <button class="help-reason-btn" onclick="submitHelpRequest('ansioso')">😟 Estou ansioso</button>
+            <button class="help-reason-btn" onclick="submitHelpRequest('vontade')">🚬 Estou com vontade</button>
+            <button class="help-reason-btn" onclick="submitHelpRequest('nervoso')">😤 Estou nervoso</button>
+            <button class="help-reason-btn" onclick="submitHelpRequest('estressado')">😣 Estou estressado</button>
+            <button class="calibration-btn" style="margin: 4px 0 0; background: #999;" onclick="closeHelpRequestModal()">Fechar</button>
+        </div>
+    </div>
+
+    <!-- MODAL: LIMITE DE AJUDA ATINGIDO -> AJUSTE DE PROTOCOLO -->
+    <div id="helpRecalibrateModal" class="modal">
+        <div class="modal-content">
+            <h3 style="color: var(--primary-blue); margin-bottom: 15px;">🔧 Vamos ajustar seu protocolo</h3>
+            <p style="margin-bottom: 20px; line-height: 1.6; color: #444;">
+                Você pediu ajuda algumas vezes hoje — isso é uma informação importante.
+                O app vai reajustar o ritmo da redução pra ficar mais confortável pra você.
+            </p>
+            <button class="calibration-btn" style="margin: 0;" onclick="closeHelpRecalibrateModal()">Entendi</button>
+        </div>
+    </div>
+
     <!-- MODAL: REGISTRAR ESCORREGÃO -->
     <div id="slipModal" class="modal">
         <div class="modal-content">
@@ -2371,6 +2447,7 @@
             }
 
             saveData();
+            updateHelpPillVisibility();
         }
 
         // Calcula até quando a calibração deve durar, respeitando o ciclo de dia:
@@ -2536,6 +2613,7 @@
 
             startActiveMode();
             saveData();
+            updateHelpPillVisibility();
 
             // Mostra o relatório assim que a calibração termina
             document.getElementById('calibrationReportText').innerText = report.text;
@@ -2927,6 +3005,55 @@ Distribuição por período:
         }
 
         // Recalibração inteligente: olha os últimos 3 dias (incluindo hoje, com peso maior pra hoje)
+        // ============================================
+        // PROTOCOLO DE EXCEÇÃO: "PRECISO DE AJUDA"
+        // Botão flutuante visível durante o protocolo ativo (pós-calibração).
+        // Tem limite diário de uso — passar do limite abre o ajuste de protocolo
+        // em vez do menu normal de motivos (por enquanto só essa primeira página existe).
+        // ============================================
+        const HELP_DAILY_LIMIT = 3;
+
+        function getHelpRequestsToday() {
+            if (!appData.helpRequests) return 0;
+            const todayKey = new Date().toDateString();
+            return appData.helpRequests.filter(r => new Date(r.timestamp).toDateString() === todayKey).length;
+        }
+
+        function openHelpRequestModal() {
+            if (getHelpRequestsToday() >= HELP_DAILY_LIMIT) {
+                document.getElementById('helpRecalibrateModal').classList.add('active');
+                recalibrateProtocol();
+                saveData();
+                return;
+            }
+            document.getElementById('helpRequestModal').classList.add('active');
+        }
+
+        function submitHelpRequest(reason) {
+            if (!appData.helpRequests) appData.helpRequests = [];
+            appData.helpRequests.push({ timestamp: Date.now(), reason });
+            saveData();
+            closeHelpRequestModal();
+            showBrief('Registrado. Aguenta mais um pouco — o protocolo está ajustando o ritmo pra você. 💙');
+        }
+
+        function closeHelpRequestModal() {
+            document.getElementById('helpRequestModal').classList.remove('active');
+        }
+
+        function closeHelpRecalibrateModal() {
+            document.getElementById('helpRecalibrateModal').classList.remove('active');
+        }
+
+        // Mostra o botão flutuante só quando o protocolo ativo (pós-calibração) está na tela
+        function updateHelpPillVisibility() {
+            const btn = document.getElementById('helpPillBtn');
+            if (!btn) return;
+            const activeSection = document.getElementById('activeModeSection');
+            const isActiveVisible = activeSection && activeSection.style.display === 'block';
+            btn.classList.toggle('visible', !!isActiveVisible);
+        }
+
         function recalibrateProtocol() {
             const now = Date.now();
             const dayKeys = [];
@@ -3480,6 +3607,7 @@ Distribuição por período:
             document.getElementById('calibrationSection').style.display = 'block';
             document.getElementById('activeModeSection').style.display = 'none';
             updateCalibrationStatus();
+            updateHelpPillVisibility();
         }
 
         // Botão "Voltar" na tela de calibração: leva pro menu de configurações pra editar algo.
@@ -3496,6 +3624,7 @@ Distribuição por período:
             }
             maybeShowCalibrationReminder();
             updateCalibrationPersistentNotification();
+            updateHelpPillVisibility();
         }
 
         document.addEventListener('visibilitychange', () => {
@@ -3532,6 +3661,19 @@ Distribuição por período:
 
             startCalibrationTicker();
             onAppResume();
+
+            // Recebe pedido de ajuda vindo do botão de ação da notificação persistente
+            if (navigator.serviceWorker) {
+                navigator.serviceWorker.addEventListener('message', (event) => {
+                    if (event.data && event.data.type === 'OPEN_HELP_REQUEST') {
+                        openHelpRequestModal();
+                    }
+                });
+            }
+            // Caso o app tenha sido aberto do zero pelo botão "Ajuda" da notificação
+            if (new URLSearchParams(window.location.search).get('help') === '1') {
+                openHelpRequestModal();
+            }
 
             // Checa mensagens agendadas a cada minuto
             setInterval(checkScheduledMessages, 60000);
