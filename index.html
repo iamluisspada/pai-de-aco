@@ -271,6 +271,44 @@
         .ob-btn-circle:active { transform: scale(.94); }
         .ob-btn-circle svg { width: 22px; height: 22px; stroke: var(--ob-accent-deep); }
 
+        /* Botão circular de vidro — mesmo estilo do onboarding, reutilizado nas ações
+           principais do app (fumar/adiantar/pular/registrar), inspirado no widget LivreMente */
+        .glass-circle-btn {
+            width: 96px; height: 96px;
+            border-radius: 50%;
+            border: none;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            cursor: pointer;
+            background: linear-gradient(165deg, var(--ob-glass-hi) 0%, var(--ob-glass-mid) 50%, var(--ob-glass-lo) 100%);
+            box-shadow: inset 0 2px 3px rgba(255,255,255,.95), inset 0 -6px 10px rgba(47,127,212,.18), 0 10px 22px rgba(47,127,212,.30);
+            color: var(--ob-accent-deep);
+            font-family: var(--ob-font-head);
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: .2px;
+            transition: opacity .2s, transform .1s;
+        }
+        .glass-circle-btn:active { transform: scale(.94); }
+        .glass-circle-btn svg { width: 24px; height: 24px; stroke: var(--ob-accent-deep); }
+        .glass-circle-btn.long-label { font-size: 9.5px; line-height: 1.15; padding: 0 6px; text-align: center; }
+        .glass-circle-btn.big { width: 112px; height: 112px; }
+        .glass-circle-btn.dim-1 { background: linear-gradient(165deg, #cfd6db 0%, #9aa5ac 50%, #6f7a82 100%); color: #fff; }
+        .glass-circle-btn.dim-1 svg { stroke: #fff; }
+        .glass-circle-btn.dim-2 { background: linear-gradient(165deg, #8a9096 0%, #5a6168 50%, #33383d 100%); color: #fff; }
+        .glass-circle-btn.dim-2 svg { stroke: #fff; }
+        .glass-circle-row {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 26px;
+            margin: 6px 0 10px;
+        }
+
         /* SETTINGS */
         .settings-group {
             background: var(--light-gray);
@@ -1463,9 +1501,12 @@
                             <div class="calibration-counter-label">Cigarros Registrados</div>
                         </div>
 
-                        <button class="calibration-btn" onclick="recordCigarette()">
-                            🚬 Registrar Cigarro
-                        </button>
+                        <div class="glass-circle-row">
+                            <button class="glass-circle-btn big long-label" onclick="recordCigarette()">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14.5h13a2 2 0 1 0 0-4H10"/><path d="M16 10.5v4"/><path d="M19 10.5v4"/><path d="M9 7c1.2-1 1.2-2 .3-3.4"/></svg>
+                                <span>Registrar<br>Cigarro</span>
+                            </button>
+                        </div>
 
                         <button class="calibration-btn" id="calibNotifBtn" style="margin-top: 10px; background: #555;" onclick="requestCalibrationPersistentNotification()">
                             🔔 Ativar notificação permanente
@@ -1518,12 +1559,14 @@
                             </p>
                         </div>
 
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
-                            <button class="calibration-btn" id="mainActionBtn" style="margin: 0;" onclick="handleMainActionBtn()">
-                                🚬 Adiantar
+                        <div class="glass-circle-row">
+                            <button class="glass-circle-btn" id="mainActionBtn" onclick="handleMainActionBtn()">
+                                <svg id="mainActionIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.6 12h12.8"/><path d="M12.6 6.4l5.6 5.6-5.6 5.6"/></svg>
+                                <span id="mainActionLabel">Adiantar</span>
                             </button>
-                            <button class="calibration-btn" id="skipBtn" style="margin: 0; background: #4CAF50; opacity: 0.4; pointer-events: none;" onclick="skipCigarette()">
-                                ⏭️ Pular Este
+                            <button class="glass-circle-btn" id="skipBtn" style="opacity: 0.4; pointer-events: none;" onclick="skipCigarette()">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 6.5l6.5 5.5-6.5 5.5z"/><path d="M13 6.5l6.5 5.5-6.5 5.5z"/></svg>
+                                <span>Pular Este</span>
                             </button>
                         </div>
                         <button class="calibration-finish-btn" onclick="toggleNoSmokingMode()" style="margin: 0;">
@@ -1640,9 +1683,15 @@
                         <p style="margin-bottom: 20px; line-height: 1.6; color: #444;">
                             Você não respondeu na última vez: você fumou ou pulou aquele cigarro?
                         </p>
-                        <div style="display: grid; gap: 10px;">
-                            <button class="calibration-btn" style="margin: 0;" onclick="resolvePending('fumei')">🚬 Fumei</button>
-                            <button class="calibration-btn" style="margin: 0; background: #4CAF50;" onclick="resolvePending('pulei')">⏭️ Pulei</button>
+                        <div class="glass-circle-row">
+                            <button class="glass-circle-btn" onclick="resolvePending('fumei')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14.5h13a2 2 0 1 0 0-4H10"/><path d="M16 10.5v4"/><path d="M19 10.5v4"/><path d="M9 7c1.2-1 1.2-2 .3-3.4"/></svg>
+                                <span>Fumei</span>
+                            </button>
+                            <button class="glass-circle-btn" onclick="resolvePending('pulei')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 6.5l6.5 5.5-6.5 5.5z"/><path d="M13 6.5l6.5 5.5-6.5 5.5z"/></svg>
+                                <span>Pulei</span>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -2694,16 +2743,21 @@ Distribuição por período:
 
         function renderMainButtonState(remaining, minutes) {
             const mainBtn = document.getElementById('mainActionBtn');
+            const mainIcon = document.getElementById('mainActionIcon');
+            const mainLabel = document.getElementById('mainActionLabel');
             const skipBtn = document.getElementById('skipBtn');
             const warningBox = document.getElementById('warningBox');
             const liberatedBox = document.getElementById('liberatedBox');
             const countdownLabel = document.getElementById('countdownLabel');
 
+            const ICON_ARROW = '<path d="M4.6 12h12.8"/><path d="M12.6 6.4l5.6 5.6-5.6 5.6"/>';
+            const ICON_SMOKE = '<path d="M3 14.5h13a2 2 0 1 0 0-4H10"/><path d="M16 10.5v4"/><path d="M19 10.5v4"/><path d="M9 7c1.2-1 1.2-2 .3-3.4"/>';
+
             if (remaining <= 0) {
                 // FASE: LIBERADO
                 currentMainPhase = 'liberated';
-                mainBtn.innerText = '🚬 Fumar';
-                mainBtn.style.background = '#0066cc';
+                mainIcon.innerHTML = ICON_SMOKE;
+                mainLabel.innerText = 'Fumar';
                 mainBtn.style.opacity = '1';
                 mainBtn.style.pointerEvents = 'auto';
                 mainBtn.onclick = () => confirmSmoked();
@@ -2717,8 +2771,8 @@ Distribuição por período:
             } else if (minutes <= 1) {
                 // FASE: ÚLTIMO MINUTO — pular libera, adiantar ainda dispara o fluxo de distração
                 currentMainPhase = 'final-minute';
-                mainBtn.innerText = '🚬 Adiantar';
-                mainBtn.style.background = '#999';
+                mainIcon.innerHTML = ICON_ARROW;
+                mainLabel.innerText = 'Adiantar';
                 mainBtn.style.opacity = '1';
                 mainBtn.style.pointerEvents = 'auto';
                 mainBtn.onclick = () => handleMainActionBtn();
@@ -2732,8 +2786,8 @@ Distribuição por período:
             } else {
                 // FASE: AGUARDANDO — adiantar disponível (opaco, mas clicável), pular travado
                 currentMainPhase = 'waiting';
-                mainBtn.innerText = '🚬 Adiantar';
-                mainBtn.style.background = '#999';
+                mainIcon.innerHTML = ICON_ARROW;
+                mainLabel.innerText = 'Adiantar';
                 mainBtn.style.opacity = '1';
                 mainBtn.style.pointerEvents = 'auto';
                 mainBtn.onclick = () => handleMainActionBtn();
@@ -2947,11 +3001,12 @@ Distribuição por período:
             checkPendingBeforeAction(() => {
                 if (earlyAttemptStage === 0) {
                     earlyAttemptStage = 1;
-                    document.getElementById('mainActionBtn').style.background = '#666'; // tom mais escuro (1ª tentativa)
+                    document.getElementById('mainActionBtn').classList.add('dim-1');
                     document.getElementById('distractionOfferModal').classList.add('active');
                 } else {
                     // Segunda tentativa: já recusou ou saiu do trivia — oferece o acordo
-                    document.getElementById('mainActionBtn').style.background = '#333'; // tom ainda mais escuro
+                    document.getElementById('mainActionBtn').classList.remove('dim-1');
+                    document.getElementById('mainActionBtn').classList.add('dim-2');
                     document.getElementById('dealModal').classList.add('active');
                 }
             });
@@ -2960,7 +3015,8 @@ Distribuição por período:
         function declineDistraction() {
             document.getElementById('distractionOfferModal').classList.remove('active');
             earlyAttemptStage = 2;
-            document.getElementById('mainActionBtn').style.background = '#333';
+            document.getElementById('mainActionBtn').classList.remove('dim-1');
+            document.getElementById('mainActionBtn').classList.add('dim-2');
             document.getElementById('dealModal').classList.add('active');
         }
 
@@ -3090,7 +3146,8 @@ Distribuição por período:
             document.getElementById('triviaModal').classList.remove('active');
             // Segunda tentativa de adiantar: oferece o acordo
             earlyAttemptStage = 2;
-            document.getElementById('mainActionBtn').style.background = '#333';
+            document.getElementById('mainActionBtn').classList.remove('dim-1');
+            document.getElementById('mainActionBtn').classList.add('dim-2');
             document.getElementById('dealModal').classList.add('active');
         }
 
@@ -3125,7 +3182,7 @@ Distribuição por período:
             todayBehavior.actualCigarettes++;
             registerSkip(); // conta como um "pulado" compensatório equivalente ao último do dia
             earlyAttemptStage = 0;
-            document.getElementById('mainActionBtn').style.background = '#0066cc';
+            document.getElementById('mainActionBtn').classList.remove('dim-1', 'dim-2');
             saveData();
             showBrief('Combinado! O último cigarro do dia fica de fora. 🤝');
         }
@@ -3141,7 +3198,7 @@ Distribuição por período:
             recalibrateProtocol();
             advanceToNextCigarette();
             earlyAttemptStage = 0;
-            document.getElementById('mainActionBtn').style.background = '#0066cc';
+            document.getElementById('mainActionBtn').classList.remove('dim-1', 'dim-2');
             saveData();
         }
 
