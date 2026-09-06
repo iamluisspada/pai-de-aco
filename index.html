@@ -352,6 +352,110 @@
         }
         .help-reason-btn:active { transform: scale(.97); }
 
+        @keyframes obSoundHintPulse {
+            0%, 100% { opacity: .85; transform: translateX(-50%) scale(1); }
+            50% { opacity: 1; transform: translateX(-50%) scale(1.04); }
+        }
+
+        /* ============================================
+           POLIMENTO VISUAL — caixas, textos e transições
+           Alinha o app principal ao visual de vidro do onboarding.
+        ============================================ */
+
+        button, .calibration-btn, .calibration-finish-btn, .btn, .tab-btn, .export-btn, .reset-btn {
+            transition: transform .16s cubic-bezier(.22,.9,.28,1),
+                        box-shadow .22s ease,
+                        background .22s ease,
+                        opacity .22s ease;
+        }
+        button:active, .calibration-btn:active, .calibration-finish-btn:active,
+        .btn:active, .export-btn:active, .reset-btn:active { transform: scale(.975); }
+
+        .calibration-section, .export-section {
+            background: var(--ob-card);
+            border-radius: 20px;
+            padding: 22px 18px;
+            box-shadow: 0 10px 26px rgba(20,60,100,.10), 0 1px 3px rgba(20,60,100,.06);
+            position: relative;
+            border: 1px solid rgba(226,233,241,.9);
+        }
+        .calibration-section::before, .export-section::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 16%; right: 16%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,.95), transparent);
+        }
+
+        .calibration-title {
+            font-family: var(--ob-font-head);
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--ob-ink);
+            letter-spacing: -.2px;
+        }
+        .calibration-info {
+            color: var(--ob-ink-soft);
+            line-height: 1.65;
+            font-size: 13.5px;
+        }
+        .calibration-counter-number {
+            font-family: var(--ob-font-head);
+            font-weight: 700;
+            letter-spacing: -1px;
+            color: var(--ob-accent-deep);
+        }
+        .calibration-counter-label {
+            font-size: 12px;
+            letter-spacing: .4px;
+            text-transform: uppercase;
+            color: var(--ob-ink-faint);
+            font-weight: 600;
+        }
+
+        #warningBox, #liberatedBox, #calibrationActiveTitle {
+            border-radius: 16px !important;
+            border-width: 1px !important;
+            animation: obSoftRise .4s cubic-bezier(.22,.9,.28,1);
+        }
+        @keyframes obSoftRise {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .modal { backdrop-filter: blur(3px); }
+        .modal-content {
+            border-radius: 22px 22px 0 0;
+            box-shadow: 0 -8px 30px rgba(20,60,100,.18);
+        }
+        .modal.active { animation: obModalIn .34s cubic-bezier(.22,.9,.28,1); }
+        @keyframes obModalIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .modal.active .modal-content { animation: obSheetUp .38s cubic-bezier(.22,.9,.28,1); }
+        @keyframes obSheetUp {
+            from { transform: translateY(14%); opacity: .6; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .tab-btn { border-radius: 10px 10px 0 0; }
+        .tab-btn.active { background: linear-gradient(180deg, rgba(47,127,212,.07), transparent); }
+        .tab-content.active { animation: obSoftRise .32s cubic-bezier(.22,.9,.28,1); }
+
+        .history-table th {
+            font-family: var(--ob-font-head);
+            font-size: 12px;
+            letter-spacing: .3px;
+            text-transform: uppercase;
+            color: var(--ob-ink-soft);
+        }
+        .history-table td { color: var(--ob-ink); }
+        .tab-content h2 {
+            font-family: var(--ob-font-head);
+            letter-spacing: -.3px;
+        }
+
         /* SETTINGS */
         .settings-group {
             background: var(--light-gray);
@@ -1309,6 +1413,10 @@
         <!-- 1. SPLASH (vídeo original) -->
         <div id="obSplash1" class="ob-screen ob-splash active" style="padding:0; background:#eef3fa;">
             <video id="obSplashVideo" src="./splash.mp4" autoplay playsinline webkit-playsinline="true" style="width:100%; height:100%; object-fit:cover;"></video>
+            <div id="obSoundHint" style="display:none; position:absolute; bottom:76px; left:50%; transform:translateX(-50%); align-items:center; gap:7px; white-space:nowrap; padding:9px 16px; border-radius:999px; background:rgba(255,255,255,.86); backdrop-filter:blur(8px); box-shadow:0 4px 14px rgba(20,60,100,.18); color:var(--ob-accent-deep); font-family:var(--ob-font-head); font-size:12px; font-weight:600; animation:obSoundHintPulse 2s ease-in-out infinite;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px;"><path d="M5 9.5h3l4-3.2v11.4l-4-3.2H5z"/><path d="M16 9.4a3.6 3.6 0 0 1 0 5.2"/><path d="M18.6 7a7 7 0 0 1 0 10"/></svg>
+                Toque para ativar o som
+            </div>
         </div>
 
         <!-- 2. SPLASH TRANSIÇÃO -->
@@ -1495,7 +1603,7 @@
     <div class="app-container">
         <!-- HEADER -->
         <div class="header">
-            <h1 style="display:flex; align-items:center; gap:6px;">⚙️ <img src="./logo-horizontal.png" alt="iStrong" style="height:26px; width:auto;"></h1>
+            <h1 style="display:flex; align-items:center; gap:8px;"><img src="./logo-horizontal.png" alt="iStrong" style="height:40px; width:auto;"></h1>
             <p>Cada dia é uma vitória</p>
         </div>
 
@@ -4115,13 +4223,31 @@ Distribuição por período:
                 }, 1000);
             }
             const splashVideo = document.getElementById('obSplashVideo');
+            const soundHint = document.getElementById('obSoundHint');
             if (splashVideo) {
                 splashVideo.addEventListener('ended', obAdvancePastVideoSplash);
-                // Tenta tocar com som; se o navegador bloquear autoplay com áudio
-                // (comum fora de PWA instalado), cai pra mudo em vez de travar.
-                splashVideo.play().catch(() => {
+
+                // Navegadores bloqueiam autoplay COM som até o usuário interagir com o site.
+                // Estratégia: tenta com som; se for bloqueado, toca mudo (pra nunca travar
+                // a abertura) e desmuta assim que houver o primeiro toque na tela.
+                function obUnmuteSplash() {
+                    if (!splashVideo.muted) return;
+                    splashVideo.muted = false;
+                    splashVideo.volume = 1;
+                    try { localStorage.setItem('obSoundUnlocked', '1'); } catch (e) {}
+                    if (soundHint) soundHint.style.display = 'none';
+                }
+
+                splashVideo.play().then(() => {
+                    if (soundHint) soundHint.style.display = 'none';
+                }).catch(() => {
                     splashVideo.muted = true;
                     splashVideo.play().catch(() => {});
+                    // Mostra a dica discreta só se o som realmente ficou bloqueado
+                    if (soundHint) soundHint.style.display = 'flex';
+                    ['pointerdown', 'touchstart', 'click', 'keydown'].forEach(evt => {
+                        document.addEventListener(evt, obUnmuteSplash, { once: true, passive: true });
+                    });
                 });
             }
             setTimeout(obAdvancePastVideoSplash, 4500);
