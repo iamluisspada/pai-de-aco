@@ -9,7 +9,8 @@ const urlsToCache = [
     './manifest.json',
     './icon-192.png',
     './icon-512.png',
-    './splash.mp4'
+    './splash.mp4',
+    './logo.png'
 ];
 
 // Instalação do Service Worker

@@ -1308,7 +1308,7 @@
 
         <!-- 1. SPLASH (vídeo original) -->
         <div id="obSplash1" class="ob-screen ob-splash active" style="padding:0; background:#eef3fa;">
-            <video id="obSplashVideo" src="./splash.mp4" autoplay muted playsinline webkit-playsinline="true" style="width:100%; height:100%; object-fit:cover;"></video>
+            <video id="obSplashVideo" src="./splash.mp4" autoplay playsinline webkit-playsinline="true" style="width:100%; height:100%; object-fit:cover;"></video>
         </div>
 
         <!-- 2. SPLASH TRANSIÇÃO -->
@@ -1329,10 +1329,7 @@
             <span class="ob-particle" style="width:7px; height:7px; top:30%; left:76%; animation-delay:1s;"></span>
             <span class="ob-particle" style="width:5px; height:5px; top:66%; left:15%; animation-delay:.1s;"></span>
             <span class="ob-particle" style="width:6px; height:6px; top:70%; left:85%; animation-delay:.7s;"></span>
-            <div class="ob-glass-badge">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8h10.8a2.4 2.4 0 1 0-2.4-2.4"/><path d="M3.5 12.3h13a2.4 2.4 0 1 1-2.4 2.4"/><path d="M3.5 16.5h8"/></svg>
-            </div>
-            <div class="ob-glass-wordmark">iStrong</div>
+            <img src="./logo.png" alt="iStrong" style="width:170px; opacity:0; animation: obWordmarkIn .6s ease .1s forwards;">
             <div class="ob-splash-sub" id="obLoadingText" style="color: var(--ob-ink-faint); margin-top: 8px; opacity: 0; animation: obWordmarkIn .6s ease .6s forwards;">Carregando...</div>
         </div>
 
@@ -1498,7 +1495,7 @@
     <div class="app-container">
         <!-- HEADER -->
         <div class="header">
-            <h1>⚙️ iStrong</h1>
+            <h1 style="display:flex; align-items:center; gap:6px;">⚙️ <img src="./logo-horizontal.png" alt="iStrong" style="height:26px; width:auto;"></h1>
             <p>Cada dia é uma vitória</p>
         </div>
 
@@ -4120,7 +4117,12 @@ Distribuição por período:
             const splashVideo = document.getElementById('obSplashVideo');
             if (splashVideo) {
                 splashVideo.addEventListener('ended', obAdvancePastVideoSplash);
-                splashVideo.play().catch(() => {});
+                // Tenta tocar com som; se o navegador bloquear autoplay com áudio
+                // (comum fora de PWA instalado), cai pra mudo em vez de travar.
+                splashVideo.play().catch(() => {
+                    splashVideo.muted = true;
+                    splashVideo.play().catch(() => {});
+                });
             }
             setTimeout(obAdvancePastVideoSplash, 4500);
         }
