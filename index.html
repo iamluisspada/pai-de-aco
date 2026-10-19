@@ -4275,10 +4275,21 @@ Distribuição por período:
             const splashVideo = document.getElementById('obSplashVideo');
             if (splashVideo) {
                 splashVideo.addEventListener('ended', obAdvancePastVideoSplash);
-                splashVideo.volume = 1;
-                splashVideo.muted = false;
+
+                // Tenta com som; se o navegador bloquear, cai pra mudo silenciosamente.
+                // No primeiro toque do usuário, liga o som de volta.
+                function obUnlockSound() {
+                    if (splashVideo.muted) {
+                        splashVideo.muted = false;
+                        splashVideo.volume = 1;
+                    }
+                }
                 splashVideo.play().catch(() => {
-                    // Autoplay bloqueado — avança direto pelo timeout
+                    splashVideo.muted = true;
+                    splashVideo.play().catch(() => {});
+                    ['touchstart', 'pointerdown', 'click'].forEach(e =>
+                        document.addEventListener(e, obUnlockSound, { once: true, passive: true })
+                    );
                 });
             }
             setTimeout(obAdvancePastVideoSplash, 4500);
