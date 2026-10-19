@@ -1446,10 +1446,7 @@
         <!-- 1. SPLASH (vídeo original) -->
         <div id="obSplash1" class="ob-screen ob-splash active" style="padding:0; background:#eef3fa;">
             <video id="obSplashVideo" src="./splash.mp4" autoplay playsinline webkit-playsinline="true" style="width:100%; height:100%; object-fit:cover;"></video>
-            <div id="obSoundHint" style="display:none; position:absolute; bottom:76px; left:50%; transform:translateX(-50%); align-items:center; gap:7px; white-space:nowrap; padding:9px 16px; border-radius:999px; background:rgba(255,255,255,.86); backdrop-filter:blur(8px); box-shadow:0 4px 14px rgba(20,60,100,.18); color:var(--ob-accent-deep); font-family:var(--ob-font-head); font-size:12px; font-weight:600; animation:obSoundHintPulse 2s ease-in-out infinite;">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px;"><path d="M5 9.5h3l4-3.2v11.4l-4-3.2H5z"/><path d="M16 9.4a3.6 3.6 0 0 1 0 5.2"/><path d="M18.6 7a7 7 0 0 1 0 10"/></svg>
-                Toque para ativar o som
-            </div>
+
         </div>
 
         <!-- 2. SPLASH TRANSIÇÃO -->
@@ -1770,17 +1767,6 @@
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14.5h13a2 2 0 1 0 0-4H10"/><path d="M16 10.5v4"/><path d="M19 10.5v4"/><path d="M9 7c1.2-1 1.2-2 .3-3.4"/></svg>
                                 <span>Registrar<br>Cigarro</span>
                             </button>
-                        </div>
-
-                        <button class="calibration-btn" id="calibNotifBtn" style="margin-top: 10px; background: #555;" onclick="requestCalibrationPersistentNotification()">
-                            🔔 Ativar notificação permanente
-                        </button>
-
-                        <button class="calibration-finish-btn" id="finishCalibrationBtn" onclick="finishCalibrationEarlyCheck()">
-                            ✅ Finalizar Calibração Agora
-                        </button>
-                        <div id="finishEarlyHint" style="display:none; font-size:11.5px; color:#a06a1a; text-align:center; margin-top:-6px; margin-bottom:8px;">
-                            Ainda não deu o tempo recomendado — terminar agora deixa a calibração menos precisa.
                         </div>
 
                         <div id="calibrationStatus" style="margin-top: 15px; text-align: center; color: #666; font-size: 13px;"></div>
@@ -2654,8 +2640,6 @@
                     // Controle de semana
                     weekStarted: 0
                 };
-                document.getElementById('calibNotifBtn').innerText = '🔔 Ativar notificação permanente';
-                document.getElementById('calibNotifBtn').disabled = false;
                 updateCalibrationStatus();
 
                 // Se ativou até 10h, pergunta retroativamente o que já aconteceu hoje
@@ -2739,8 +2723,6 @@
             document.getElementById('calibrationStatus').innerHTML =
                 `Cigarros registrados: ${cd.cigarettes.length}`;
 
-            const earlyHint = document.getElementById('finishEarlyHint');
-            if (earlyHint) earlyHint.style.display = remaining > 0 ? 'block' : 'none';
         }
 
         // Finalizar Calibração: se ainda falta tempo recomendado, confirma antes;
@@ -3763,11 +3745,6 @@ Distribuição por período:
                     appData.calibrationData.persistentNotifOn = true;
                     saveData();
                     updateCalibrationPersistentNotification();
-                    const btn = document.getElementById('calibNotifBtn');
-                    btn.innerText = '✅ Notificação ativa';
-                    btn.disabled = true;
-                } else {
-                    alert('Não foi possível ativar a notificação agora. Você pode permitir depois nas configurações do navegador/celular.');
                 }
             });
         }
@@ -3895,11 +3872,6 @@ Distribuição por período:
             if (appData.calibrationReport) {
                 document.getElementById('viewReportBtn').style.display = 'block';
             }
-            if (appData.calibrationData && appData.calibrationData.persistentNotifOn) {
-                document.getElementById('calibNotifBtn').innerText = '✅ Notificação ativa';
-                document.getElementById('calibNotifBtn').disabled = true;
-            }
-
             startCalibrationTicker();
             onAppResume();
 
@@ -4301,31 +4273,12 @@ Distribuição por período:
                 }, 1000);
             }
             const splashVideo = document.getElementById('obSplashVideo');
-            const soundHint = document.getElementById('obSoundHint');
             if (splashVideo) {
                 splashVideo.addEventListener('ended', obAdvancePastVideoSplash);
-
-                // Navegadores bloqueiam autoplay COM som até o usuário interagir com o site.
-                // Estratégia: tenta com som; se for bloqueado, toca mudo (pra nunca travar
-                // a abertura) e desmuta assim que houver o primeiro toque na tela.
-                function obUnmuteSplash() {
-                    if (!splashVideo.muted) return;
-                    splashVideo.muted = false;
-                    splashVideo.volume = 1;
-                    try { localStorage.setItem('obSoundUnlocked', '1'); } catch (e) {}
-                    if (soundHint) soundHint.style.display = 'none';
-                }
-
-                splashVideo.play().then(() => {
-                    if (soundHint) soundHint.style.display = 'none';
-                }).catch(() => {
-                    splashVideo.muted = true;
-                    splashVideo.play().catch(() => {});
-                    // Mostra a dica discreta só se o som realmente ficou bloqueado
-                    if (soundHint) soundHint.style.display = 'flex';
-                    ['pointerdown', 'touchstart', 'click', 'keydown'].forEach(evt => {
-                        document.addEventListener(evt, obUnmuteSplash, { once: true, passive: true });
-                    });
+                splashVideo.volume = 1;
+                splashVideo.muted = false;
+                splashVideo.play().catch(() => {
+                    // Autoplay bloqueado — avança direto pelo timeout
                 });
             }
             setTimeout(obAdvancePastVideoSplash, 4500);
